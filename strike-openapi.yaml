@@ -1,0 +1,1359 @@
+openapi: 3.1.0
+info:
+  title: Strike API
+  version: v1
+  description: The Strike API provides integration with Strike for accessing your Strike account.
+  contact:
+    email: support@strike.me
+  termsOfService: https://developer.strike.me/terms
+
+servers:
+  - url: https://api.strike.me
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    Currency:
+      type: string
+      enum: [BTC, USD, EUR, USDT, GBP, AUD]
+      description: Currency code
+    
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: string
+          description: Currency amount in decimal format
+          example: "100.00"
+        currency:
+          $ref: '#/components/schemas/Currency'
+    
+    InvoiceState:
+      type: string
+      enum: [UNPAID, PENDING, PAID, CANCELLED]
+      description: State of the invoice
+    
+    PaymentState:
+      type: string
+      enum: [PENDING, COMPLETED, FAILED]
+      description: State of the payment
+    
+    DepositState:
+      type: string
+      enum: [NEW, PENDING, COMPLETED, FAILED, REVERSED]
+      description: State of the deposit
+    
+    PaymentMethodState:
+      type: string
+      enum: [PENDING, READY, SUSPENDED, INVALID, INACTIVE]
+      description: State of the bank payment method
+    
+    PayoutState:
+      type: string
+      enum: [NEW, INITIATED, COMPLETED, FAILED, REVERSED]
+      description: State of the payout
+    
+    PayoutOriginatorState:
+      type: string
+      enum: [PENDING_REVIEW, APPROVED, REJECTED, INACTIVE]
+      description: State of the payout originator
+    
+    TransferType:
+      type: string
+      enum: [ACH, US_DOMESTIC_WIRE, SEPA, FPS, BSB]
+      description: Bank transfer type
+    
+    AccountType:
+      type: string
+      enum: [CHECKING, SAVINGS]
+      description: Bank account type
+    
+    BeneficiaryType:
+      type: string
+      enum: [INDIVIDUAL, COMPANY]
+      description: Type of beneficiary
+    
+    SupportedAction:
+      type: string
+      enum: [DEPOSIT, WITHDRAWAL]
+      description: Actions supported by payment method
+    
+    FeePolicy:
+      type: string
+      enum: [INCLUSIVE, EXCLUSIVE]
+      description: Should the fee be included in the amount or added on top of it
+    
+    WebhookVersion:
+      type: string
+      enum: [v1, v2]
+      description: Version of the webhook payload format
+    
+    ConversionRate:
+      type: object
+      required: [amount, sourceCurrency, targetCurrency]
+      properties:
+        amount:
+          type: string
+          description: Currency amount in decimal format
+        sourceCurrency:
+          $ref: '#/components/schemas/Currency'
+        targetCurrency:
+          $ref: '#/components/schemas/Currency'
+    
+    Address:
+      type: object
+      properties:
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 code for the country
+        state:
+          type: string
+          description: State code based on the country
+        city:
+          type: string
+          description: The name of the city or town
+        postCode:
+          type: string
+          description: The postal code or ZIP code for the address
+        line1:
+          type: string
+          description: The street address
+    
+    Beneficiary:
+      type: object
+      required: [type, name]
+      properties:
+        dateOfBirth:
+          type: string
+          format: date
+          description: Date of birth of the individual
+        type:
+          $ref: '#/components/schemas/BeneficiaryType'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Name of the beneficiary
+        address:
+          $ref: '#/components/schemas/Address'
+    
+    BankPaymentMethod:
+      type: object
+      required: [id, state, created, transferType, currency]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Id of the payment method
+        state:
+          $ref: '#/components/schemas/PaymentMethodState'
+        supportedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedAction'
+        created:
+          type: string
+          format: date-time
+        transferType:
+          $ref: '#/components/schemas/TransferType'
+        accountNumber:
+          type: string
+          description: Bank account number (IBAN for SEPA)
+        routingNumber:
+          type: string
+          description: Routing number (BIC for SEPA, sort code for FPS, BSB code for BSB)
+        referenceCode:
+          type: string
+          description: Reference code for deposits
+        accountType:
+          $ref: '#/components/schemas/AccountType'
+        bankName:
+          type: string
+          description: Name of the bank
+        bankAddress:
+          $ref: '#/components/schemas/Address'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        beneficiaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Beneficiary'
+          minItems: 1
+    
+    Invoice:
+      type: object
+      required: [invoiceId, amount, state, created, issuerId, receiverId]
+      properties:
+        invoiceId:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/Money'
+        state:
+          $ref: '#/components/schemas/InvoiceState'
+        created:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+          maxLength: 40
+        description:
+          type: string
+          maxLength: 200
+        issuerId:
+          type: string
+          format: uuid
+        receiverId:
+          type: string
+          format: uuid
+        payerId:
+          type: string
+          format: uuid
+          description: Present only when invoice was created for dedicated payer
+    
+    Payout:
+      type: object
+      required: [id, state, created, paymentMethodId, originatorId, amount, fee]
+      properties:
+        id:
+          type: string
+          format: uuid
+        state:
+          $ref: '#/components/schemas/PayoutState'
+        created:
+          type: string
+          format: date-time
+        paymentMethodId:
+          type: string
+          format: uuid
+        originatorId:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/Money'
+        fee:
+          type: object
+          properties:
+            amount:
+              type: string
+            currency:
+              type: string
+              enum: [USD, EUR, GBP, AUD]
+            feePolicy:
+              $ref: '#/components/schemas/FeePolicy'
+        reference:
+          type: string
+          description: Reference passed to the receiver
+        initiated:
+          type: string
+          format: date-time
+        completed:
+          type: string
+          format: date-time
+    
+    PayoutOriginator:
+      type: object
+      required: [id, state, created, details]
+      properties:
+        id:
+          type: string
+          format: uuid
+        state:
+          $ref: '#/components/schemas/PayoutOriginatorState'
+        created:
+          type: string
+          format: date-time
+        details:
+          type: object
+          properties:
+            dateOfBirth:
+              type: string
+              format: date
+            type:
+              $ref: '#/components/schemas/BeneficiaryType'
+            name:
+              type: string
+            address:
+              $ref: '#/components/schemas/Address'
+    
+    ErrorResponse:
+      type: object
+      properties:
+        traceId:
+          type: string
+          format: uuid
+        data:
+          type: object
+          required: [code, message, status]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            status:
+              type: integer
+            values:
+              type: object
+              additionalProperties: true
+            validationErrors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    message:
+                      type: string
+                    values:
+                      type: object
+        debug:
+          type: object
+          properties:
+            full:
+              type: string
+            body:
+              type: string
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+paths:
+  /v1/accounts/{id}/profile:
+    get:
+      tags: [Accounts]
+      summary: Fetch public account profile info by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  handle:
+                    type: string
+                  avatarUrl:
+                    type: string
+                  description:
+                    type: string
+                  canReceive:
+                    type: boolean
+                  currencies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        currency:
+                          $ref: '#/components/schemas/Currency'
+                        isDefaultCurrency:
+                          type: boolean
+                        isAvailable:
+                          type: boolean
+                        isInvoiceable:
+                          type: boolean
+
+  /v1/accounts/handle/{handle}/profile:
+    get:
+      tags: [Accounts]
+      summary: Fetch public account profile info by handle
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/accounts/limits:
+    get:
+      tags: [Accounts]
+      summary: Fetch logged in account limits
+      responses:
+        '200':
+          description: OK
+
+  /v1/balances:
+    get:
+      tags: [Balances]
+      summary: Get account balance details
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    currency:
+                      $ref: '#/components/schemas/Currency'
+                    current:
+                      type: string
+                    pending:
+                      type: string
+                    outgoing:
+                      type: string
+                    reserved:
+                      type: string
+                    available:
+                      type: string
+                    total:
+                      type: string
+
+  /v1/currency-exchange-quotes:
+    post:
+      tags: [Currency Exchange]
+      summary: Create currency exchange quote
+      parameters:
+        - name: idempotency-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sell, buy, amount]
+              properties:
+                sell:
+                  $ref: '#/components/schemas/Currency'
+                buy:
+                  $ref: '#/components/schemas/Currency'
+                amount:
+                  $ref: '#/components/schemas/Money'
+                feePolicy:
+                  $ref: '#/components/schemas/FeePolicy'
+      responses:
+        '200':
+          description: OK
+
+  /v1/currency-exchange-quotes/{quoteId}:
+    get:
+      tags: [Currency Exchange]
+      summary: Get currency exchange quote
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/currency-exchange-quotes/{quoteId}/execute:
+    patch:
+      tags: [Currency Exchange]
+      summary: Execute currency exchange quote
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Accepted
+
+  /v1/deposits:
+    post:
+      tags: [Deposits]
+      summary: Initiate deposit
+      parameters:
+        - name: idempotency-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentMethodId, amount]
+              properties:
+                paymentMethodId:
+                  type: string
+                amount:
+                  type: string
+                feePolicy:
+                  $ref: '#/components/schemas/FeePolicy'
+      responses:
+        '200':
+          description: OK
+    
+    get:
+      tags: [Deposits]
+      summary: Get deposits
+      parameters:
+        - name: $skip
+          in: query
+          schema:
+            type: integer
+        - name: $top
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+
+  /v1/deposits/{depositId}:
+    get:
+      tags: [Deposits]
+      summary: Get deposit
+      parameters:
+        - name: depositId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/deposits/fee:
+    post:
+      tags: [Deposits]
+      summary: Get deposit fee estimate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentMethodId, amount]
+              properties:
+                paymentMethodId:
+                  type: string
+                amount:
+                  type: string
+                feePolicy:
+                  $ref: '#/components/schemas/FeePolicy'
+      responses:
+        '200':
+          description: OK
+
+  /v1/events/{eventId}:
+    get:
+      tags: [Events]
+      summary: Find event by ID
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/events:
+    get:
+      tags: [Events]
+      summary: Get events
+      parameters:
+        - name: $filter
+          in: query
+          schema:
+            type: string
+        - name: $orderby
+          in: query
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: integer
+        - name: $top
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+
+  /v1/invoices:
+    post:
+      tags: [Invoices]
+      summary: Issue invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                correlationId:
+                  type: string
+                  maxLength: 40
+                description:
+                  type: string
+                  maxLength: 200
+                amount:
+                  $ref: '#/components/schemas/Money'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+    
+    get:
+      tags: [Invoices]
+      summary: Get invoices
+      parameters:
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          description: Filter using OData syntax (invoiceId, created, currency, state, issuerId, receiverId, payerId, correlationId)
+        - name: $orderby
+          in: query
+          schema:
+            type: string
+          description: Order using OData syntax (created)
+        - name: $skip
+          in: query
+          schema:
+            type: integer
+        - name: $top
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+                  count:
+                    type: integer
+                  isCountUnknown:
+                    type: boolean
+
+  /v1/invoices/{invoiceId}:
+    get:
+      tags: [Invoices]
+      summary: Find invoice by ID
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+
+  /v1/invoices-for-receiver/handle/{handle}:
+    post:
+      tags: [Invoices]
+      summary: Issue invoice for receiver
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                correlationId:
+                  type: string
+                  maxLength: 40
+                description:
+                  type: string
+                  maxLength: 200
+                amount:
+                  $ref: '#/components/schemas/Money'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+
+  /v1/invoices/{invoiceId}/quote:
+    post:
+      tags: [Invoices]
+      summary: Issue quote for invoice
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                descriptionHash:
+                  type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/invoices/{invoiceId}/cancel:
+    patch:
+      tags: [Invoices]
+      summary: Cancel invoice
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/payment-methods/bank:
+    post:
+      tags: [Payment Methods]
+      summary: Create bank payment method
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [transferType]
+              properties:
+                transferType:
+                  $ref: '#/components/schemas/TransferType'
+                accountNumber:
+                  type: string
+                routingNumber:
+                  type: string
+                accountType:
+                  $ref: '#/components/schemas/AccountType'
+                bankName:
+                  type: string
+                  maxLength: 150
+                bankAddress:
+                  $ref: '#/components/schemas/Address'
+                beneficiaries:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Beneficiary'
+                plaidPublicToken:
+                  type: string
+                plaidAccountId:
+                  type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankPaymentMethod'
+    
+    get:
+      tags: [Payment Methods]
+      summary: Get bank payment methods
+      parameters:
+        - name: supportedAction
+          in: query
+          schema:
+            $ref: '#/components/schemas/SupportedAction'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BankPaymentMethod'
+
+  /v1/payment-methods/bank/{id}:
+    get:
+      tags: [Payment Methods]
+      summary: Get bank payment method by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankPaymentMethod'
+    
+    delete:
+      tags: [Payment Methods]
+      summary: Delete bank payment method
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: No Content
+
+  /v1/payment-quotes/lightning:
+    post:
+      tags: [Payments]
+      summary: Create lightning payment quote
+      parameters:
+        - name: idempotency-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lnInvoice]
+              properties:
+                lnInvoice:
+                  type: string
+                sourceCurrency:
+                  $ref: '#/components/schemas/Currency'
+                amount:
+                  $ref: '#/components/schemas/Money'
+                feePolicy:
+                  $ref: '#/components/schemas/FeePolicy'
+      responses:
+        '200':
+          description: OK
+
+  /v1/payment-quotes/lightning/lnurl/{lnAddressOrUrl}:
+    get:
+      tags: [Payments]
+      summary: Get LNURL details
+      parameters:
+        - name: lnAddressOrUrl
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/payment-quotes/lightning/lnurl:
+    post:
+      tags: [Payments]
+      summary: Create LNURL/LN address payment quote
+      parameters:
+        - name: idempotency-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lnAddressOrUrl, amount]
+              properties:
+                lnAddressOrUrl:
+                  type: string
+                sourceCurrency:
+                  $ref: '#/components/schemas/Currency'
+                amount:
+                  $ref: '#/components/schemas/Money'
+                description:
+                  type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/payment-quotes/onchain:
+    post:
+      tags: [Payments]
+      summary: Create onchain payment quote
+      parameters:
+        - name: idempotency-key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [onchainAddress, amount]
+              properties:
+                onchainAddress:
+                  type: string
+                amount:
+                  $ref: '#/components/schemas/Money'
+                sourceCurrency:
+                  $ref: '#/components/schemas/Currency'
+                tier:
+                  type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/payment-quotes/onchain/tiers:
+    post:
+      tags: [Payments]
+      summary: Get onchain tiers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [onchainAddress, amount]
+              properties:
+                onchainAddress:
+                  type: string
+                amount:
+                  $ref: '#/components/schemas/Money'
+                sourceCurrency:
+                  $ref: '#/components/schemas/Currency'
+      responses:
+        '200':
+          description: OK
+
+  /v1/payment-quotes/{paymentQuoteId}/execute:
+    patch:
+      tags: [Payments]
+      summary: Execute payment quote
+      parameters:
+        - name: paymentQuoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '202':
+          description: Accepted
+
+  /v1/payments/{paymentId}:
+    get:
+      tags: [Payments]
+      summary: Get payment by ID
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/payout-originators:
+    post:
+      tags: [Payout Originators]
+      summary: Create payout originator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [details]
+              properties:
+                details:
+                  type: object
+                  required: [type, name]
+                  properties:
+                    dateOfBirth:
+                      type: string
+                      format: date
+                    type:
+                      $ref: '#/components/schemas/BeneficiaryType'
+                    name:
+                      type: string
+                    address:
+                      $ref: '#/components/schemas/Address'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutOriginator'
+    
+    get:
+      tags: [Payout Originators]
+      summary: Get payout originators
+      parameters:
+        - name: $skip
+          in: query
+          schema:
+            type: integer
+        - name: $top
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PayoutOriginator'
+                  count:
+                    type: integer
+                  isCountUnknown:
+                    type: boolean
+
+  /v1/payout-originators/{id}:
+    get:
+      tags: [Payout Originators]
+      summary: Get payout originator by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutOriginator'
+    
+    delete:
+      tags: [Payout Originators]
+      summary: Delete payout originator
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: No Content
+
+  /v1/payouts:
+    post:
+      tags: [Payouts]
+      summary: Create payout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentMethodId, originatorId, amount]
+              properties:
+                paymentMethodId:
+                  type: string
+                  format: uuid
+                originatorId:
+                  type: string
+                  format: uuid
+                amount:
+                  type: string
+                feePolicy:
+                  $ref: '#/components/schemas/FeePolicy'
+                reference:
+                  type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+    
+    get:
+      tags: [Payouts]
+      summary: Get payouts
+      parameters:
+        - name: $skip
+          in: query
+          schema:
+            type: integer
+        - name: $top
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payout'
+                  count:
+                    type: integer
+                  isCountUnknown:
+                    type: boolean
+
+  /v1/payouts/{id}:
+    get:
+      tags: [Payouts]
+      summary: Get payout by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+
+  /v1/payouts/{id}/initiate:
+    patch:
+      tags: [Payouts]
+      summary: Initiate a payout
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+
+  /v1/rates/ticker:
+    get:
+      tags: [Rates]
+      summary: Get currency exchange rate tickers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversionRate'
+
+  /v1/receive-requests:
+    post:
+      tags: [Receive Requests]
+      summary: Create receive request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+    
+    get:
+      tags: [Receive Requests]
+      summary: Get receive requests
+      responses:
+        '200':
+          description: OK
+
+  /v1/receive-requests/{id}:
+    get:
+      tags: [Receive Requests]
+      summary: Find receive request by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/receive-requests/{id}/receives:
+    get:
+      tags: [Receive Requests]
+      summary: Get receives for receive request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /v1/receive-requests/receives:
+    get:
+      tags: [Receive Requests]
+      summary: Get all receives for any receive request
+      responses:
+        '200':
+          description: OK
+
+  /v1/subscriptions:
+    post:
+      tags: [Subscriptions]
+      summary: Create subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [webhookUrl, webhookVersion, eventTypes]
+              properties:
+                webhookUrl:
+                  type: string
+                webhookVersion:
+                  type: string
+                  enum: [v1, v2]
+                enabled:
+                  type: boolean
+                eventTypes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Created
+    
+    get:
+      tags: [Subscriptions]
+      summary: Get subscriptions
+      responses:
+        '200':
+          description: OK
+
+  /v1/subscriptions/{subscriptionId}:
+    get:
+      tags: [Subscriptions]
+      summary: Find subscription by ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    
+    patch:
+      tags: [Subscriptions]
+      summary: Update subscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: OK
+    
+    delete:
+      tags: [Subscriptions]
+      summary: Delete subscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
