@@ -1,5 +1,5 @@
 > [!CAUTION]
-> The majority of the content in this repository are AI generated. Only parts of the specification are verified to be correct. Allways test your code and verify the results. If you need to change anything, feel free to open a pull request.
+> The majority of the content in this repository is AI generated. Only parts of the specification are verified to be correct. Allways test your code and verify the results. If you need to change anything, feel free to open a pull request.
 
 
 # Strike API OpenAPI 3.1 Specification
