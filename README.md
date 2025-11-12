@@ -121,11 +121,3 @@ This specification is based on the official Strike API documentation. If you fin
 ## License
 
 This OpenAPI specification is provided for integration purposes. Please refer to Strike's [API Terms](https://developer.strike.me/terms) for usage terms and conditions.
-
-## Changelog
-
-### 2025-01-12
-- Initial complete OpenAPI 3.1 specification
-- All v1 endpoints documented
-- Comprehensive schema definitions
-- Full authentication and error handling documentation
