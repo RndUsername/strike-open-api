@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Strike API
-  version: v1
+  version: v2.0.0
   description: The Strike API provides integration with Strike for accessing your Strike account.
   contact:
     email: support@strike.me
@@ -345,6 +345,9 @@ paths:
     get:
       tags: [Accounts]
       summary: Fetch public account profile info by ID
+      operationId: getAccountProfileById
+      externalDocs:
+        url: https://docs.strike.me/api/fetch-public-account-profile-info-by-id
       parameters:
         - name: id
           in: path
@@ -387,6 +390,9 @@ paths:
     get:
       tags: [Accounts]
       summary: Fetch public account profile info by handle
+      operationId: getAccountProfileByHandle
+      externalDocs:
+        url: https://docs.strike.me/api/fetch-public-account-profile-info-by-handle
       parameters:
         - name: handle
           in: path
@@ -401,6 +407,9 @@ paths:
     get:
       tags: [Accounts]
       summary: Fetch logged in account limits
+      operationId: getAccountLimits
+      externalDocs:
+        url: https://docs.strike.me/api/fetch-logged-in-account-limits
       responses:
         '200':
           description: OK
@@ -409,6 +418,9 @@ paths:
     get:
       tags: [Balances]
       summary: Get account balance details
+      operationId: getBalances
+      externalDocs:
+        url: https://docs.strike.me/api/get-account-balance-details
       responses:
         '200':
           description: OK
@@ -438,6 +450,9 @@ paths:
     post:
       tags: [Currency Exchange]
       summary: Create currency exchange quote
+      operationId: createCurrencyExchangeQuote
+      externalDocs:
+        url: https://docs.strike.me/api/create-currency-exchange-quote
       parameters:
         - name: idempotency-key
           in: header
@@ -467,6 +482,9 @@ paths:
     get:
       tags: [Currency Exchange]
       summary: Get currency exchange quote
+      operationId: getCurrencyExchangeQuote
+      externalDocs:
+        url: https://docs.strike.me/api/get-currency-exchange-quote
       parameters:
         - name: quoteId
           in: path
@@ -481,6 +499,9 @@ paths:
     patch:
       tags: [Currency Exchange]
       summary: Execute currency exchange quote
+      operationId: executeCurrencyExchangeQuote
+      externalDocs:
+        url: https://docs.strike.me/api/execute-currency-exchange-quote
       parameters:
         - name: quoteId
           in: path
@@ -495,6 +516,9 @@ paths:
     post:
       tags: [Deposits]
       summary: Initiate deposit
+      operationId: createDeposit
+      externalDocs:
+        url: https://docs.strike.me/api/initiate-deposit
       parameters:
         - name: idempotency-key
           in: header
@@ -521,6 +545,8 @@ paths:
     get:
       tags: [Deposits]
       summary: Get deposits
+      externalDocs:
+        url: https://docs.strike.me/api/get-deposits
       parameters:
         - name: $skip
           in: query
@@ -538,6 +564,9 @@ paths:
     get:
       tags: [Deposits]
       summary: Get deposit
+      operationId: getDeposit
+      externalDocs:
+        url: https://docs.strike.me/api/get-deposit
       parameters:
         - name: depositId
           in: path
@@ -552,6 +581,9 @@ paths:
     post:
       tags: [Deposits]
       summary: Get deposit fee estimate
+      operationId: getDepositFeeEstimate
+      externalDocs:
+        url: https://docs.strike.me/api/get-deposit-fee-estimate
       requestBody:
         required: true
         content:
@@ -574,6 +606,9 @@ paths:
     get:
       tags: [Events]
       summary: Find event by ID
+      operationId: getEventById
+      externalDocs:
+        url: https://docs.strike.me/api/find-event-by-id
       parameters:
         - name: eventId
           in: path
@@ -588,6 +623,9 @@ paths:
     get:
       tags: [Events]
       summary: Get events
+      operationId: listEvents
+      externalDocs:
+        url: https://docs.strike.me/api/get-events
       parameters:
         - name: $filter
           in: query
@@ -613,6 +651,9 @@ paths:
     post:
       tags: [Invoices]
       summary: Issue invoice
+      operationId: createInvoice
+      externalDocs:
+        url: https://docs.strike.me/api/issue-invoice
       requestBody:
         required: true
         content:
@@ -640,6 +681,9 @@ paths:
     get:
       tags: [Invoices]
       summary: Get invoices
+      operationId: listInvoices
+      externalDocs:
+        url: https://docs.strike.me/api/get-invoices
       parameters:
         - name: $filter
           in: query
@@ -681,6 +725,9 @@ paths:
     get:
       tags: [Invoices]
       summary: Find invoice by ID
+      operationId: getInvoiceById
+      externalDocs:
+        url: https://docs.strike.me/api/find-invoice-by-id
       parameters:
         - name: invoiceId
           in: path
@@ -700,6 +747,9 @@ paths:
     post:
       tags: [Invoices]
       summary: Issue invoice for receiver
+      operationId: createInvoiceForReceiver
+      externalDocs:
+        url: https://docs.strike.me/api/issue-invoice-for-receiver
       parameters:
         - name: handle
           in: path
@@ -734,6 +784,9 @@ paths:
     post:
       tags: [Invoices]
       summary: Issue quote for invoice
+      operationId: createInvoiceQuote
+      externalDocs:
+        url: https://docs.strike.me/api/issue-quote-for-invoice
       parameters:
         - name: invoiceId
           in: path
@@ -756,6 +809,9 @@ paths:
     patch:
       tags: [Invoices]
       summary: Cancel invoice
+      operationId: cancelInvoice
+      externalDocs:
+        url: https://docs.strike.me/api/cancel-unpaid-invoice
       parameters:
         - name: invoiceId
           in: path
@@ -770,6 +826,9 @@ paths:
     post:
       tags: [Payment Methods]
       summary: Create bank payment method
+      operationId: createBankPaymentMethod
+      externalDocs:
+        url: https://docs.strike.me/api/create-bank-payment-method
       requestBody:
         required: true
         content:
@@ -810,6 +869,9 @@ paths:
     get:
       tags: [Payment Methods]
       summary: Get bank payment methods
+      operationId: listBankPaymentMethods
+      externalDocs:
+        url: https://docs.strike.me/api/get-bank-payment-methods
       parameters:
         - name: supportedAction
           in: query
@@ -829,6 +891,9 @@ paths:
     get:
       tags: [Payment Methods]
       summary: Get bank payment method by ID
+      operationId: getBankPaymentMethodById
+      externalDocs:
+        url: https://docs.strike.me/api/get-bank-payment-method-by-id
       parameters:
         - name: id
           in: path
@@ -847,6 +912,9 @@ paths:
     delete:
       tags: [Payment Methods]
       summary: Delete bank payment method
+      operationId: deleteBankPaymentMethod
+      externalDocs:
+        url: https://docs.strike.me/api/delete-bank-payment-method
       parameters:
         - name: id
           in: path
@@ -862,6 +930,9 @@ paths:
     post:
       tags: [Payments]
       summary: Create lightning payment quote
+      operationId: createLightningPaymentQuote
+      externalDocs:
+        url: https://docs.strike.me/api/create-lightning-payment-quote
       parameters:
         - name: idempotency-key
           in: header
@@ -891,6 +962,9 @@ paths:
     get:
       tags: [Payments]
       summary: Get LNURL details
+      operationId: getLnurlDetails
+      externalDocs:
+        url: https://docs.strike.me/api/get-lnurl-details
       parameters:
         - name: lnAddressOrUrl
           in: path
@@ -905,6 +979,9 @@ paths:
     post:
       tags: [Payments]
       summary: Create LNURL/LN address payment quote
+      operationId: createLnurlPaymentQuote
+      externalDocs:
+        url: https://docs.strike.me/api/create-lnurl-ln-address-payment-quote
       parameters:
         - name: idempotency-key
           in: header
@@ -934,6 +1011,9 @@ paths:
     post:
       tags: [Payments]
       summary: Create onchain payment quote
+      operationId: createOnchainPaymentQuote
+      externalDocs:
+        url: https://docs.strike.me/api/create-onchain-payment-quote
       parameters:
         - name: idempotency-key
           in: header
@@ -963,6 +1043,9 @@ paths:
     post:
       tags: [Payments]
       summary: Get onchain tiers
+      operationId: getOnchainTiers
+      externalDocs:
+        url: https://docs.strike.me/api/get-onchain-tiers
       requestBody:
         required: true
         content:
@@ -985,6 +1068,9 @@ paths:
     patch:
       tags: [Payments]
       summary: Execute payment quote
+      operationId: executePaymentQuote
+      externalDocs:
+        url: https://docs.strike.me/api/execute-payment-quote
       parameters:
         - name: paymentQuoteId
           in: path
@@ -1001,6 +1087,9 @@ paths:
     get:
       tags: [Payments]
       summary: Get payment by ID
+      operationId: getPaymentById
+      externalDocs:
+        url: https://docs.strike.me/api/get-payment-by-id
       parameters:
         - name: paymentId
           in: path
@@ -1015,6 +1104,9 @@ paths:
     post:
       tags: [Payout Originators]
       summary: Create payout originator
+      operationId: createPayoutOriginator
+      externalDocs:
+        url: https://docs.strike.me/api/create-a-payout-originator
       requestBody:
         required: true
         content:
@@ -1047,6 +1139,9 @@ paths:
     get:
       tags: [Payout Originators]
       summary: Get payout originators
+      operationId: listPayoutOriginators
+      externalDocs:
+        url: https://docs.strike.me/api/get-payout-originators
       parameters:
         - name: $skip
           in: query
@@ -1078,6 +1173,9 @@ paths:
     get:
       tags: [Payout Originators]
       summary: Get payout originator by ID
+      operationId: getPayoutOriginatorById
+      externalDocs:
+        url: https://docs.strike.me/api/find-payout-originator-by-id
       parameters:
         - name: id
           in: path
@@ -1096,6 +1194,9 @@ paths:
     delete:
       tags: [Payout Originators]
       summary: Delete payout originator
+      operationId: deletePayoutOriginator
+      externalDocs:
+        url: https://docs.strike.me/api/delete-a-payout-originator
       parameters:
         - name: id
           in: path
@@ -1111,6 +1212,9 @@ paths:
     post:
       tags: [Payouts]
       summary: Create payout
+      operationId: createPayout
+      externalDocs:
+        url: https://docs.strike.me/api/create-a-payout
       requestBody:
         required: true
         content:
@@ -1142,6 +1246,9 @@ paths:
     get:
       tags: [Payouts]
       summary: Get payouts
+      operationId: listPayouts
+      externalDocs:
+        url: https://docs.strike.me/api/get-payouts
       parameters:
         - name: $skip
           in: query
@@ -1173,6 +1280,9 @@ paths:
     get:
       tags: [Payouts]
       summary: Get payout by ID
+      operationId: getPayoutById
+      externalDocs:
+        url: https://docs.strike.me/api/find-payout-by-id
       parameters:
         - name: id
           in: path
@@ -1192,6 +1302,9 @@ paths:
     patch:
       tags: [Payouts]
       summary: Initiate a payout
+      operationId: initiatePayout
+      externalDocs:
+        url: https://docs.strike.me/api/initiate-a-payout
       parameters:
         - name: id
           in: path
@@ -1211,6 +1324,9 @@ paths:
     get:
       tags: [Rates]
       summary: Get currency exchange rate tickers
+      operationId: getRatesTicker
+      externalDocs:
+        url: https://docs.strike.me/api/get-currency-exchange-rate-tickers
       responses:
         '200':
           description: OK
@@ -1225,6 +1341,9 @@ paths:
     post:
       tags: [Receive Requests]
       summary: Create receive request
+      operationId: createReceiveRequest
+      externalDocs:
+        url: https://docs.strike.me/api/create-a-receive-request
       requestBody:
         required: true
         content:
@@ -1238,6 +1357,9 @@ paths:
     get:
       tags: [Receive Requests]
       summary: Get receive requests
+      operationId: listReceiveRequests
+      externalDocs:
+        url: https://docs.strike.me/api/get-receive-requests
       responses:
         '200':
           description: OK
@@ -1246,6 +1368,9 @@ paths:
     get:
       tags: [Receive Requests]
       summary: Find receive request by ID
+      operationId: getReceiveRequestById
+      externalDocs:
+        url: https://docs.strike.me/api/find-receive-request-by-id
       parameters:
         - name: id
           in: path
@@ -1260,6 +1385,9 @@ paths:
     get:
       tags: [Receive Requests]
       summary: Get receives for receive request
+      operationId: listReceivesForReceiveRequest
+      externalDocs:
+        url: https://docs.strike.me/api/get-receives-for-receive-request
       parameters:
         - name: id
           in: path
@@ -1274,6 +1402,9 @@ paths:
     get:
       tags: [Receive Requests]
       summary: Get all receives for any receive request
+      operationId: listReceives
+      externalDocs:
+        url: https://docs.strike.me/api/get-receives-for-all-receive-requests
       responses:
         '200':
           description: OK
@@ -1282,6 +1413,9 @@ paths:
     post:
       tags: [Subscriptions]
       summary: Create subscription
+      operationId: createSubscription
+      externalDocs:
+        url: https://docs.strike.me/api/create-subscription
       requestBody:
         required: true
         content:
@@ -1308,6 +1442,9 @@ paths:
     get:
       tags: [Subscriptions]
       summary: Get subscriptions
+      operationId: listSubscriptions
+      externalDocs:
+        url: https://docs.strike.me/api/get-subscriptions
       responses:
         '200':
           description: OK
@@ -1316,6 +1453,9 @@ paths:
     get:
       tags: [Subscriptions]
       summary: Find subscription by ID
+      operationId: getSubscriptionById
+      externalDocs:
+        url: https://docs.strike.me/api/find-subscription-by-id
       parameters:
         - name: subscriptionId
           in: path
@@ -1329,6 +1469,8 @@ paths:
     patch:
       tags: [Subscriptions]
       summary: Update subscription
+      externalDocs:
+        url: https://docs.strike.me/api/update-subscription
       parameters:
         - name: subscriptionId
           in: path
@@ -1348,6 +1490,8 @@ paths:
     delete:
       tags: [Subscriptions]
       summary: Delete subscription
+      externalDocs:
+        url: https://docs.strike.me/api/delete-subscription
       parameters:
         - name: subscriptionId
           in: path
