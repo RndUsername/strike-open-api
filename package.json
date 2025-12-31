@@ -16,8 +16,8 @@
         "typescript": "~5.9.0"
     },
     "scripts": {
-        "start": "node src/main.ts --0.0.0",
-        "dev": "node --watch src/main.ts --0.0.0",
+        "start": "node src/main.ts",
+        "dev": "node --watch src/main.ts",
         "postinstall": "npx crawlee install-playwright-browsers",
         "playwright:codegen": "playwright codegen https://docs.strike.me/api",
         "playwright:test": "playwright test --ui"

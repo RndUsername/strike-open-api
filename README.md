@@ -22,7 +22,7 @@ Parts of the specification get crawled from the official documentation, after wh
 
 This specification is based on the official Strike API documentation. If you find any discrepancies or have suggestions for improvements, please open an issue or submit a pull request.
 
-Run `pnpm install` to setup the project and run `node src/main.ts --<version>` to create the spec, where `<version>` is the version that gets written into the spec. Use at least version 24 of Node.js as this is a TypeScript project.
+Run `pnpm install` to setup the project and run `pnpm run start <version>` to create the spec, where `<version>` is the version that gets written into the spec. Use at least version 24 of Node.js as this is a TypeScript project.
 
 ## License
 
