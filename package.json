@@ -1,0 +1,27 @@
+{
+    "name": "strike-open-api",
+    "version": "0.0.1",
+    "type": "module",
+    "engines": {
+        "node": ">=24"
+    },
+    "description": "Code to crawl the Strike API documentation and create an OpenAPI specification from it.",
+    "dependencies": {
+        "crawlee": "^3.0.0",
+        "playwright": "*",
+        "yaml": "^2.8.2"
+    },
+    "devDependencies": {
+        "@types/node": "^24.10.1",
+        "typescript": "~5.9.0"
+    },
+    "scripts": {
+        "start": "node src/main.ts --0.0.0",
+        "dev": "node --watch src/main.ts --0.0.0",
+        "postinstall": "npx crawlee install-playwright-browsers",
+        "playwright:codegen": "playwright codegen https://docs.strike.me/api",
+        "playwright:test": "playwright test --ui"
+    },
+    "author": "It's not you it's me",
+    "license": "ISC"
+}
